@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+    <html lang="en">
+   
+    <head>
+   
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <meta name="description" content="">
+      <meta name="author" content="">
+   
+      <title>GDF - Firehack</title>
+   
+      <!-- Bootstrap core CSS -->
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <link href="index.css" rel="stylesheet">
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+      <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>    
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+      <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    </head>
+   
+    <body>
+   
+      <!-- Navigation -->
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+        <div class="container">
+          <a class="navbar-brand" href="#">Growing Data Foundation</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="#">Home
+                  <span class="sr-only">(current)</span>
+                </a>
+              </li>
+             
+
+            </ul>
+          </div>
+        </div>
+      </nav>
+   
+      <!-- Page Content -->
+      <div  style="width: 100%; height: 100%; position: absolute;  margin-top: 3rem !important;margin-bottom: 3rem !important;">
+         
+                 <div  id="map">
+                  <div id="loader-wrapper">
+                    <div id="loader"></div>
+                    <div class="loader-section section-left"></div>
+                    <div class="loader-section section-right"></div>
+                    <p id='status'>Loading water tanks</p>
+                </div>
+                 </div>
+            <br />
+            <button onClick = "getCurrentLocation()" class="btn btn-lg btn-primary">Find the nearest tanks</button> 
+             
+           
+          </div>
+        
+        </div>
+     
+          <script>
+              //WFS Service
+              var wfsUrl = 'https://geo.opensensing.at/cgi-bin/qgis_mapserv.fcgi?SERVICE=WFS&VERSION=2.0&REQUEST=getFeature&typeName=firewater&MAP=/home/phartl/geo/firehack.qgs&outputFormat=application/json'
+                // Create variable to hold map element, give initial settings to map
+                $body = $('body')
+                var zoomLevel = 15,
+                mapCenter = [-34.921230, 138.599503];
+    
+                var options = {
+                    center: mapCenter,
+                    zoom: zoomLevel
+                };
+               
+                var map = L.map('map',{ center: [-34.921230, 138.599503], zoom: 9});
+                L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: 'Â© OpenStreetMap' }).addTo(map);
+              
+                //L.marker([-34.924573, 138.602724]).addTo(map);
+            
+            
+              var WFSLayer = null;
+              var ajax = $.ajax({
+                  url : wfsUrl,
+                  dataType : 'json',
+                  jsonCallback : 'callback',
+                  type: 'GET',
+                  success : function (response) {
+                    WFSLayer = L.geoJson(response, {
+                          style: function (feature) {
+                              return {
+                                  stroke: false,
+                                  fillColor: 'DF0101',
+                                  fillOpacity: 4
+                              };
+                          },
+                          onEachFeature: function (feature, layer) {
+                              popupOptions = {maxWidth: 600};
+                              layer.bindPopup('<h4>Device Name: '+feature.properties.device_name+'</h4><br><h4> Level: '+feature.properties.lev+'</h4>'
+                                  ,popupOptions);
+                          }
+                      }).addTo(map);
+                      $body.addClass('loaded');
+                  }
+              });
+  
+        function getCurrentLocation(){
+        
+            if (!navigator.geolocation){
+                alert("<p>Sorry, your browser does not support Geolocation</p>");
+                return;
+            }
+              
+              
+            navigator.geolocation.getCurrentPosition(success, error);
+            
+          }
+
+        function success(position) {
+        
+       
+        console.log("Does it come inside")
+        var currentPos = [position.coords.latitude,position.coords.longitude];
+        console.log(currentPos)
+        map.setView(currentPos, zoomLevel);
+
+        var myLocation = L.marker(currentPos)
+                            .addTo(map)
+                            .bindTooltip("you are here")
+                            .openTooltip();
+        
+      
+
+            
+                queryFeatures(currentPos, 20);
+             
+
+    };
+    function error() {
+        alert("Unable to retrieve your location");
+    };
+    function queryFeatures(currentPos, numResults) {
+        
+        var distances = [];
+        
+        WFSLayer.eachLayer(function(l) {
+            
+            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
+            
+            distances.push(distance);
+
+        });
+        
+        distances.sort(function(a, b) {
+            return a - b;
+        });
+        
+        var stationsLayer = L.featureGroup();
+            
+
+        WFSLayer.eachLayer(function(l) {
+            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
+           
+            if(distance < distances[1]) {
+               
+                l.bindTooltip(distance.toLocaleString() + ' km from current location.');
+                
+                L.polyline([currentPos, l.getLatLng()], {
+                    color : 'green',
+                    weight : 2,
+                    opacity: 1,
+                    dashArray : "5, 10"
+                }).addTo(stationsLayer);
+                
+            }
+        });
+        map.flyToBounds(stationsLayer.getBounds(), {duration : 3, easeLinearity: .1 });
+        
+        map.on('zoomend', function() {
+          
+            map.addLayer(stationsLayer);
+        })
+      
+    }
+          
+            </script>
+     
+   
+      <!-- Bootstrap core JavaScript -->
+      <script src="app.js"></script>
+    </body>
+     
+    </html>
