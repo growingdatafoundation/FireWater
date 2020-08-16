@@ -34,14 +34,30 @@ map.setCenter({lat:-34.92874438537443, lng:138.5987412929535});
 map.setZoom(zoomLevel);
 var layers = [];
 var base = 'Hydrants.zip';
+function addMarkerToGroup(group, coordinate, html) {
+  var marker = new H.map.Marker(coordinate);
+  // add custom data to the marker
+  marker.setData(html);
+  group.addObject(marker);
+}
 
 
 getData(function(response){
  for(var i in response) {
-    console.log("anpop")
+    
       //add a marker
       var marker = new H.map.Marker({lat:response[i].lat, lng:response[i].lng});
       map.addObject(marker);
+     
+  //    marker.addEventListener('tap', function (evt) {
+      var xy = map.geoToScreen({lat:response[i].lat, lng:response[i].lng});
+
+      var bubble =  new H.ui.InfoBubble(map.screenToGeo(xy.x, xy.y - 30), {
+        content: response[i].device_name
+      });
+
+      ui.addBubble(bubble);
+    //}, false);
   }
  
  /*
@@ -67,14 +83,14 @@ shp(base).then(function(geojsonObject){
 
 //------------- Function list --------------
 function getData(callback) {
- //// $.ajax({
-  //  url: dataUrl,
-  //  type: "GET",
-  //  success : function (response) {
-      callback([{"id":2,"device_id":4,"lat":"-33.352474","lng":"138.18175","device_name":"pls2-l-0066","toas":null,"cap":null,"lev":"15826","con":null,"geom":"0101000020E6100000894160E5D04561405C5837DE1DAD40C0","time_updated":"2020-08-15 08:48:37.296055"},{"id":1,"device_id":3,"lat":"-35.025856","lng":"138.52568","device_name":"pls2-l-0067","toas":null,"cap":null,"lev":"11619","con":null,"geom":"0101000020E61000002905DD5ED2506140E333D93F4F8341C0","time_updated":"2020-08-15 10:45:58.587888"}]);
-     //callback('http://localhost:8080/data.json')
-  //  }
-//  });
+  $.ajax({
+    url: dataUrl,
+    type: "GET",
+    success : function (response) {
+    //  callback([{"id":2,"device_id":4,"lat":"-33.352474","lng":"138.18175","device_name":"pls2-l-0066","toas":null,"cap":null,"lev":"15826","con":null,"geom":"0101000020E6100000894160E5D04561405C5837DE1DAD40C0","time_updated":"2020-08-15 08:48:37.296055"},{"id":1,"device_id":3,"lat":"-35.025856","lng":"138.52568","device_name":"pls2-l-0067","toas":null,"cap":null,"lev":"11619","con":null,"geom":"0101000020E61000002905DD5ED2506140E333D93F4F8341C0","time_updated":"2020-08-15 10:45:58.587888"}]);
+     callback(response)
+    }
+  });
 }
 
 function getCurrentLocation(){ 
