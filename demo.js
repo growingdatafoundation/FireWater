@@ -1,5 +1,5 @@
 var apikey = 'HiQJYJvRF0bzY3C1FDReYh8VXa8a2LFRnUUthlwGUG4';
-var zoomLevel = 10;
+var zoomLevel = 12;
 var panel = document.getElementById('panel');
 //var dataUrl = 'https://geo.opensensing.at/cgi-bin/qgis_mapserv.fcgi?SERVICE=WFS&VERSION=2.0&REQUEST=getFeature&typeName=firewater&MAP=/home/phartl/geo/firehack.qgs&outputFormat=application/json';
 var dataUrl = 'https://firewater.opensensing.com/api/firewaters';
@@ -33,7 +33,6 @@ var ui = H.ui.UI.createDefault(map, defaultLayers);
 map.setCenter({lat:-34.92874438537443, lng:138.5987412929535});
 map.setZoom(zoomLevel);
 var layers = [];
-var base = 'Hydrants.zip';
 function addMarkerToGroup(group, coordinate, html) {
   var marker = new H.map.Marker(coordinate);
   // add custom data to the marker
@@ -79,6 +78,44 @@ shp(base).then(function(geojsonObject){
 }); */
   $('body').addClass('loaded');
 });
+getHydrantData(function(response){
+  console.log(response[0])
+  for(var i in response) {
+     
+       //add a marker
+       var marker = new H.map.Marker({lat:response[i].lat, lng:response[i].lng});
+       map.addObject(marker);
+  }
+   //    marker.addEventListener('tap', function (evt) {
+     //  var xy = map.geoToScreen({lat:response[i].lat, lng:response[i].lng});
+ 
+    //   var bubble =  new H.ui.InfoBubble(map.screenToGeo(xy.x, xy.y - 30), {
+    //     content: response[i].device_name
+    //   });
+ 
+   //    ui.addBubble(bubble);
+     //}, false);
+  // }
+  
+  /*
+   group = new H.map.Group();
+ group.addObject(marker1);
+ group.addObject(marker2);
+ 
+ // add to map
+ map.addObject(group);
+ shp(base).then(function(geojsonObject){
+   console.log(geojsonObject[0].features)
+   var icon = new H.map.Icon('hydrant-icon.png')
+   for(var i in geojsonObject[0].features) {
+       //add a marker
+       var marker = new H.map.Marker({lat:geojsonObject[0].features[i].geometry.coordinates[1], lng:geojsonObject[0].features[i].geometry.coordinates[0]}, {icon: icon});
+       group.addObject(marker);
+   }
+ 
+ }); */
+   $('body').addClass('loaded');
+ });
 
 
 //------------- Function list --------------
@@ -91,8 +128,40 @@ function getData(callback) {
      callback(response)
     }
   });
+ 
+}
+function getHydrantData(callback){
+  var position_data = getLocation()
+  //var currentPos = {lat: position.coords.latitude,lng: position.coords.longitude};
+
+  
+}
+function getLocation(callback) {
+  if (navigator.geolocation) {
+    return navigator.geolocation.getCurrentPosition(showPosition);
+  
+  }
 }
 
+function showPosition(position, callback) {
+  console.log(position)
+  var icon = new H.map.Icon('hydrant-icon.png')
+  $.ajax({
+    url: 'https://firewater.opensensing.com/api/firehydrants',
+    type: "POST",
+    data: {"lat":position.coords.latitude,"lng": position.coords.longitude},
+    success : function (response) {
+    //  callback([{"id":2,"device_id":4,"lat":"-33.352474","lng":"138.18175","device_name":"pls2-l-0066","toas":null,"cap":null,"lev":"15826","con":null,"geom":"0101000020E6100000894160E5D04561405C5837DE1DAD40C0","time_updated":"2020-08-15 08:48:37.296055"},{"id":1,"device_id":3,"lat":"-35.025856","lng":"138.52568","device_name":"pls2-l-0067","toas":null,"cap":null,"lev":"11619","con":null,"geom":"0101000020E61000002905DD5ED2506140E333D93F4F8341C0","time_updated":"2020-08-15 10:45:58.587888"}]);
+    for(var i in response) {
+     
+      //add a marker
+      var marker = new H.map.Marker({lat:response[i].lat, lng:response[i].lng}, {icon:icon});
+      map.addObject(marker);
+  }
+    }
+  }); 
+ 
+}
 function getCurrentLocation(){ 
   if (!navigator.geolocation){
     alert("<p>Sorry, your browser does not support Geolocation</p>");
