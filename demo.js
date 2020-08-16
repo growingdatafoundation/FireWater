@@ -40,6 +40,8 @@ function addMarkerToGroup(group, coordinate, html) {
   group.addObject(marker);
 }
 
+var volume = ""
+var percent=""
 
 getData(function(response){
  for(var i in response) {
@@ -47,12 +49,22 @@ getData(function(response){
       //add a marker
       var marker = new H.map.Marker({lat:response[i].lat, lng:response[i].lng});
       map.addObject(marker);
+     if(response[i].device_name === 'pls2-l-0067'){
      
+      volume= "70,000L"
+      percent = "70%"
+     }
+     if(response[i].device_name === 'pls2-l-0066'){
+     
+      
+      volume = "100,000L"
+      percent = "100%"
+     }
   //    marker.addEventListener('tap', function (evt) {
       var xy = map.geoToScreen({lat:response[i].lat, lng:response[i].lng});
 
       var bubble =  new H.ui.InfoBubble(map.screenToGeo(xy.x, xy.y - 30), {
-        content: response[i].device_name
+        content: '<div >'+response[i].device_name+'</div><div > <b>Current Volume: </b>'+volume+'</div><div ><b> Percentage:</b> '+percent+'</div>'
       });
 
       ui.addBubble(bubble);
@@ -80,12 +92,7 @@ shp(base).then(function(geojsonObject){
 });
 getHydrantData(function(response){
   console.log(response[0])
-  for(var i in response) {
-     
-       //add a marker
-       var marker = new H.map.Marker({lat:response[i].lat, lng:response[i].lng});
-       map.addObject(marker);
-  }
+  
    //    marker.addEventListener('tap', function (evt) {
      //  var xy = map.geoToScreen({lat:response[i].lat, lng:response[i].lng});
  
@@ -136,7 +143,7 @@ function getHydrantData(callback){
 
   
 }
-function getLocation(callback) {
+function getLocation() {
   if (navigator.geolocation) {
     return navigator.geolocation.getCurrentPosition(showPosition);
   
