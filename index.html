@@ -18,6 +18,51 @@
       <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>    
       <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
       <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+      <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+      <title>Water tank</title>
+      <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+      <link rel="stylesheet" type="text/css" href="demo.css" />
+      <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
+      <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+      <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+      <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+      <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+      <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-data.js"></script>
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+      <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <link href="index.css" rel="stylesheet">
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+      <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>    
+     <!--  <script src="js/shp.js"></script> -->
+      <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+      <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css" type="text/css">
+      <style type="text/css">
+        .directions li span.arrow {
+          display:inline-block;
+          min-width:28px;
+          min-height:28px;
+          background-position:0px;
+          background-image: url("https://heremaps.github.io/maps-api-for-javascript-examples/map-with-route-from-a-to-b/img/arrows.png");
+          position:relative;
+          top:8px;
+        }
+        .directions li span.depart  {
+          background-position:-28px;
+        }
+        .directions li span.rightturn  {
+          background-position:-224px;
+        }
+        .directions li span.leftturn{
+          background-position:-252px;
+        }
+        .directions li span.arrive  {
+          background-position:-1288px;
+        }
+    </style>
     </head>
    
     <body>
@@ -61,135 +106,9 @@
           </div>
         
         </div>
-     
-          <script>
-              //WFS Service
-              var wfsUrl = 'https://geo.opensensing.at/cgi-bin/qgis_mapserv.fcgi?SERVICE=WFS&VERSION=2.0&REQUEST=getFeature&typeName=firewater&MAP=/home/phartl/geo/firehack.qgs&outputFormat=application/json'
-                // Create variable to hold map element, give initial settings to map
-                $body = $('body')
-                var zoomLevel = 15,
-                mapCenter = [-34.921230, 138.599503];
-    
-                var options = {
-                    center: mapCenter,
-                    zoom: zoomLevel
-                };
-               
-                var map = L.map('map',{ center: [-34.921230, 138.599503], zoom: 9});
-                L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', { attribution: 'Â© OpenStreetMap' }).addTo(map);
-              
-                //L.marker([-34.924573, 138.602724]).addTo(map);
-            
-            
-              var WFSLayer = null;
-              var ajax = $.ajax({
-                  url : wfsUrl,
-                  dataType : 'json',
-                  jsonCallback : 'callback',
-                  type: 'GET',
-                  success : function (response) {
-                    WFSLayer = L.geoJson(response, {
-                          style: function (feature) {
-                              return {
-                                  stroke: false,
-                                  fillColor: 'DF0101',
-                                  fillOpacity: 4
-                              };
-                          },
-                          onEachFeature: function (feature, layer) {
-                              popupOptions = {maxWidth: 600};
-                              layer.bindPopup('<h4>Device Name: '+feature.properties.device_name+'</h4><br><h4> Level: '+feature.properties.lev+'</h4>'
-                                  ,popupOptions);
-                          }
-                      }).addTo(map);
-                      $body.addClass('loaded');
-                  }
-              });
+        <div id="panel"></div>
+        <script type="text/javascript" src='demo.js'></script>
   
-        function getCurrentLocation(){
-        
-            if (!navigator.geolocation){
-                alert("<p>Sorry, your browser does not support Geolocation</p>");
-                return;
-            }
-              
-              
-            navigator.geolocation.getCurrentPosition(success, error);
-            
-          }
-
-        function success(position) {
-        
-       
-        console.log("Does it come inside")
-        var currentPos = [position.coords.latitude,position.coords.longitude];
-        console.log(currentPos)
-        map.setView(currentPos, zoomLevel);
-
-        var myLocation = L.marker(currentPos)
-                            .addTo(map)
-                            .bindTooltip("you are here")
-                            .openTooltip();
-        
-      
-
-            
-                queryFeatures(currentPos, 20);
-             
-
-    };
-    function error() {
-        alert("Unable to retrieve your location");
-    };
-    function queryFeatures(currentPos, numResults) {
-        
-        var distances = [];
-        
-        WFSLayer.eachLayer(function(l) {
-            
-            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
-            
-            distances.push(distance);
-
-        });
-        
-        distances.sort(function(a, b) {
-            return a - b;
-        });
-        
-        var stationsLayer = L.featureGroup();
-            
-
-        WFSLayer.eachLayer(function(l) {
-            var distance = L.latLng(currentPos).distanceTo(l.getLatLng())/1000;
-           
-            if(distance < distances[1]) {
-               
-                l.bindTooltip(distance.toLocaleString() + ' km from current location.');
-                
-                L.polyline([currentPos, l.getLatLng()], {
-                    color : 'green',
-                    weight : 2,
-                    opacity: 1,
-                    dashArray : "5, 10"
-                }).addTo(stationsLayer);
-                
-            }
-        });
-        map.flyToBounds(stationsLayer.getBounds(), {duration : 3, easeLinearity: .1 });
-        
-        map.on('zoomend', function() {
-          
-            map.addLayer(stationsLayer);
-        })
-      
-    }
-          
-            </script>
-     
-   
-      <!-- Bootstrap core JavaScript -->
-      <script src="app.js"></script>
     </body>
      
     </html>
